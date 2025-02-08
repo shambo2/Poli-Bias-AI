@@ -9,37 +9,77 @@ const NEWS_API_URL =
   NEWS_API_KEY;
 
 /**************************************************
- * 2) MOCK BIAS CALCULATOR
+ * 2) CALL THE FLASK BACKEND FOR BIAS ANALYSIS
  **************************************************/
-function mockCalculateBias(articleText) {
-  // Typically, you'd call your AI model or ML classifier here.
-  // We'll just randomly generate percentages for demonstration.
-  const left = Math.floor(Math.random() * 50);
-  const center = Math.floor(Math.random() * (100 - left));
-  const right = 100 - (left + center);
+// This function sends article text to your local Flask server,
+// which runs the facebook/bart-large-mnli zero-shot classification.
+async function analyzeWithAI(articleText) {
+  try {
+    // Adjust if your backend is at a different IP/port
+    const response = await fetch("http://127.0.0.1:5000/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: articleText }),
+    });
 
-  return { left, center, right };
+    if (!response.ok) {
+      console.error("Server error:", response.statusText);
+      return { bias_scores: null };
+    }
+
+    const data = await response.json();
+    // data should look like:
+    // {
+    //   "text": "article text here",
+    //   "bias_scores": {
+    //     "Left": 45.32,
+    //     "Center": 30.11,
+    //     "Right": 20.57,
+    //     "Uncertain": 4.00
+    //   }
+    // }
+    return data;
+  } catch (error) {
+    console.error("Network or CORS error:", error);
+    return { bias_scores: null };
+  }
 }
 
 /**************************************************
- * 3) RENDER ARTICLES
+ * 3) GET BIAS SCORES (HELPER FUNCTION)
  **************************************************/
-function renderArticle(article) {
-  // For bias calculation, you might pass article.content
-  // or combine title + description.
-  const biasResult = mockCalculateBias(article.title || "");
+async function realCalculateBias(articleText) {
+  const result = await analyzeWithAI(articleText);
+  if (result.bias_scores) {
+    // Convert to a simpler shape for our UI
+    return {
+      left: result.bias_scores["Left"] || 0,
+      center: result.bias_scores["Center"] || 0,
+      right: result.bias_scores["Right"] || 0,
+      uncertain: result.bias_scores["Uncertain"] || 0,
+    };
+  } else {
+    // Fallback if the API call fails
+    return { left: 0, center: 0, right: 0, uncertain: 100 };
+  }
+}
 
+/**************************************************
+ * 4) RENDER ARTICLES
+ **************************************************/
+// We make renderArticle asynchronous to await the AI results.
+async function renderArticle(article) {
   const articleCard = document.createElement("div");
   articleCard.classList.add("article-card");
 
-  // Image
+  // IMAGE
   const image = document.createElement("img");
   image.classList.add("article-image");
   image.src =
     article.urlToImage || "https://via.placeholder.com/400x200?text=No+Image";
   image.alt = article.title || "News Image";
 
-  // Info container
+  // TEXT INFO
   const info = document.createElement("div");
   info.classList.add("article-info");
 
@@ -51,7 +91,7 @@ function renderArticle(article) {
   const description = document.createElement("p");
   description.textContent = article.description || "No description available.";
 
-  // Link (source)
+  // "Read more" link
   const readMore = document.createElement("a");
   readMore.href = article.url;
   readMore.target = "_blank";
@@ -59,7 +99,17 @@ function renderArticle(article) {
   readMore.style.color = "#e74c3c";
   readMore.style.fontWeight = "bold";
 
-  // Bias bars
+  // APPEND title, desc, link
+  info.appendChild(title);
+  info.appendChild(description);
+  info.appendChild(readMore);
+
+  // BIAS ANALYSIS
+  // We combine the title + description as the text for the AI to analyze.
+  const articleText = (article.title || "") + " " + (article.description || "");
+  const biasResult = await realCalculateBias(articleText);
+
+  // Create the bias container
   const biasContainer = document.createElement("div");
   biasContainer.classList.add("article-bias");
 
@@ -75,15 +125,17 @@ function renderArticle(article) {
   rightBar.classList.add("bias-bar", "bias-right");
   rightBar.textContent = `Right ${biasResult.right}%`;
 
-  // Append elements
+  const uncertainBar = document.createElement("div");
+  uncertainBar.classList.add("bias-bar");
+  uncertainBar.style.backgroundColor = "#7f8c8d"; // or any color for "Uncertain"
+  uncertainBar.textContent = `Uncertain ${biasResult.uncertain}%`;
+
   biasContainer.appendChild(leftBar);
   biasContainer.appendChild(centerBar);
   biasContainer.appendChild(rightBar);
+  biasContainer.appendChild(uncertainBar);
 
-  info.appendChild(title);
-  info.appendChild(description);
-  info.appendChild(readMore);
-
+  // BUILD THE ARTICLE CARD
   articleCard.appendChild(image);
   articleCard.appendChild(info);
   articleCard.appendChild(biasContainer);
@@ -92,7 +144,7 @@ function renderArticle(article) {
 }
 
 /**************************************************
- * 4) FETCH & DISPLAY ARTICLES
+ * 5) FETCH & DISPLAY ARTICLES FROM NEWS API
  **************************************************/
 async function fetchNewsArticles() {
   try {
@@ -100,13 +152,14 @@ async function fetchNewsArticles() {
     const data = await response.json();
 
     const articlesContainer = document.getElementById("articlesContainer");
-    articlesContainer.innerHTML = ""; // Clear previous articles
+    articlesContainer.innerHTML = ""; // Clear previous
 
     if (data.articles && data.articles.length > 0) {
-      data.articles.forEach((article) => {
-        const articleCard = renderArticle(article);
+      // Render each article in sequence
+      for (const article of data.articles) {
+        const articleCard = await renderArticle(article);
         articlesContainer.appendChild(articleCard);
-      });
+      }
     } else {
       articlesContainer.innerHTML = "<p>No news found.</p>";
     }
@@ -118,7 +171,7 @@ async function fetchNewsArticles() {
 }
 
 /**************************************************
- * 5) EVENT LISTENERS
+ * 6) EVENT LISTENERS
  **************************************************/
 document.addEventListener("DOMContentLoaded", () => {
   const fetchNewsBtn = document.getElementById("fetchNewsBtn");
