@@ -1,8 +1,6 @@
 /**************************************************
- * 1) FETCHING ARTICLES FROM NEWS API
+ * 1) CONFIGURE NEWS API
  **************************************************/
-// Replace YOUR_NEWS_API_KEY with your actual NewsAPI.org key
-// or integrate with any other news API of your choice.
 const NEWS_API_KEY = "2dc45dc7649c4533a789b8a39531a7da";
 const NEWS_API_URL =
   "https://newsapi.org/v2/top-headlines?country=us&pageSize=6&apiKey=" +
@@ -11,8 +9,6 @@ const NEWS_API_URL =
 /**************************************************
  * 2) CALL THE FLASK BACKEND FOR BIAS ANALYSIS
  **************************************************/
-// This function sends article text to your local Flask server,
-// which runs the facebook/bart-large-mnli zero-shot classification.
 async function analyzeWithAI(articleText) {
   try {
     // Adjust if your backend is at a different IP/port
@@ -28,14 +24,13 @@ async function analyzeWithAI(articleText) {
     }
 
     const data = await response.json();
-    // data should look like:
+    // Example:
     // {
-    //   "text": "article text here",
+    //   "text": "...",
     //   "bias_scores": {
     //     "Left": 45.32,
     //     "Center": 30.11,
-    //     "Right": 20.57,
-    //     "Uncertain": 4.00
+    //     "Right": 24.57
     //   }
     // }
     return data;
@@ -51,16 +46,16 @@ async function analyzeWithAI(articleText) {
 async function realCalculateBias(articleText) {
   const result = await analyzeWithAI(articleText);
   if (result.bias_scores) {
-    // Convert to a simpler shape for our UI
+    // Convert to a simpler shape for our UI.
+    // We assume the server no longer returns "Uncertain"
     return {
       left: result.bias_scores["Left"] || 0,
       center: result.bias_scores["Center"] || 0,
       right: result.bias_scores["Right"] || 0,
-      uncertain: result.bias_scores["Uncertain"] || 0,
     };
   } else {
     // Fallback if the API call fails
-    return { left: 0, center: 0, right: 0, uncertain: 100 };
+    return { left: 0, center: 0, right: 0 };
   }
 }
 
@@ -99,13 +94,13 @@ async function renderArticle(article) {
   readMore.style.color = "#e74c3c";
   readMore.style.fontWeight = "bold";
 
-  // APPEND title, desc, link
+  // Append text info
   info.appendChild(title);
   info.appendChild(description);
   info.appendChild(readMore);
 
   // BIAS ANALYSIS
-  // We combine the title + description as the text for the AI to analyze.
+  // Combine title + description for the text analysis
   const articleText = (article.title || "") + " " + (article.description || "");
   const biasResult = await realCalculateBias(articleText);
 
@@ -113,29 +108,27 @@ async function renderArticle(article) {
   const biasContainer = document.createElement("div");
   biasContainer.classList.add("article-bias");
 
+  // Left bar
   const leftBar = document.createElement("div");
   leftBar.classList.add("bias-bar", "bias-left");
   leftBar.textContent = `Left ${biasResult.left}%`;
 
+  // Center bar
   const centerBar = document.createElement("div");
   centerBar.classList.add("bias-bar", "bias-center");
   centerBar.textContent = `Center ${biasResult.center}%`;
 
+  // Right bar
   const rightBar = document.createElement("div");
   rightBar.classList.add("bias-bar", "bias-right");
   rightBar.textContent = `Right ${biasResult.right}%`;
 
-  const uncertainBar = document.createElement("div");
-  uncertainBar.classList.add("bias-bar");
-  uncertainBar.style.backgroundColor = "#7f8c8d"; // or any color for "Uncertain"
-  uncertainBar.textContent = `Uncertain ${biasResult.uncertain}%`;
-
+  // Append the three bars
   biasContainer.appendChild(leftBar);
   biasContainer.appendChild(centerBar);
   biasContainer.appendChild(rightBar);
-  biasContainer.appendChild(uncertainBar);
 
-  // BUILD THE ARTICLE CARD
+  // Build the article card
   articleCard.appendChild(image);
   articleCard.appendChild(info);
   articleCard.appendChild(biasContainer);
