@@ -2,90 +2,74 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Poli-bias AI: Political bias analysis in real-time news articles"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Poly-Ai</title>
-    <!-- Link to external CSS -->
-    <link rel="stylesheet" href="styles.css" />
-    <!-- Google Fonts (Optional) -->
+    <title>Poli-bias AI</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Optional: Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
     />
   </head>
   <body>
-    <!-- Navigation Bar -->
+    <!-- NAVIGATION BAR -->
     <nav class="navbar">
       <div class="navbar-logo">
-        <h1>Poli-Bias AI</h1>
+        <h1>Poli-bias AI</h1>
       </div>
       <div class="navbar-links">
         <a href="#home">Home</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#contact">Contact</a>
+        <a href="#articles">Articles</a>
+        <a href="#about">About</a>
       </div>
     </nav>
 
-    <!-- Header Section / Hero Banner -->
+    <!-- HERO SECTION -->
     <header class="hero" id="home">
       <div class="hero-content">
-        <h2>Find Out the Political Bias in News Articles</h2>
+        <h2>Real-Time Political Bias Analysis</h2>
         <p>
-          Paste your article or link below to see if it leans left, right,
-          center, or is uncertain.
+          Discover how articles from different sources lean across the political
+          spectrum.
         </p>
+        <button id="fetchNewsBtn">Fetch Latest News</button>
       </div>
     </header>
 
-    <!-- Main Section -->
-    <main class="container">
-      <section class="input-section">
-        <h3>Check an Article for Bias</h3>
-        <label for="articleInput">Paste the article content here:</label>
-        <textarea
-          id="articleInput"
-          placeholder="Paste the text content here"
-        ></textarea>
-
-        <p class="or">OR</p>
-
-        <label for="articleURL">Enter the article URL here:</label>
-        <input type="text" id="articleURL" placeholder="Paste the URL here" />
-
-        <button id="checkBiasBtn">Check for Bias</button>
-      </section>
-
-      <section class="results-section">
-        <h3>Analysis Results</h3>
-        <div id="results" class="results-box">
-          <!-- Bias result will appear here -->
+    <!-- MAIN CONTENT -->
+    <main>
+      <!-- NEWS ARTICLES SECTION -->
+      <section id="articles" class="articles-section">
+        <h2>Top News</h2>
+        <div class="articles-container" id="articlesContainer">
+          <!-- Articles populated by JS -->
         </div>
       </section>
 
-      <section class="how-it-works" id="how-it-works">
-        <h3>How It Works</h3>
+      <!-- ABOUT SECTION -->
+      <section id="about" class="about-section">
+        <h2>About Poli-bias AI</h2>
         <p>
-          This tool uses an AI model to analyze the language and tone of news
-          articles to determine if the article is left-leaning, right-leaning,
-          or relatively neutral. The model looks for keywords, phrases, and
-          overall sentiment patterns associated with different political
-          spectrums.
+          Poli-bias AI fetches the latest news articles from popular APIs and
+          analyzes them to show a (mock) breakdown of potential bias: Left,
+          Center, and Right. In a production environment, you can replace the
+          mock analysis with your own AI or ML model to gauge an article's
+          political leaning more accurately.
         </p>
       </section>
     </main>
 
-    <!-- Footer Section -->
-    <footer id="contact">
-      <div class="footer-content">
-        <p>&copy; 2025 Poli-Bias AI. All rights reserved.</p>
-        <p>
-          Contact us:
-          <a href="mailto:info@aibiasdetector.com">info@aibiasdetector.com</a>
-        </p>
-      </div>
+    <!-- FOOTER -->
+    <footer>
+      <p>&copy; 2025 Poli-bias AI. All rights reserved.</p>
     </footer>
 
-    <!-- Link to external JS -->
+    <!-- SCRIPTS -->
     <script src="script.js"></script>
   </body>
 </html>
