@@ -34,3 +34,4 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsBox.textContent = `Detected Political Bias: ${result}`;
   });
 });
+`
