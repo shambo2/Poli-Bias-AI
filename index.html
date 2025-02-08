@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poly-Ai</title>
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Google Fonts (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+    />
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="navbar-logo">
+        <h1>AI Bias Detector</h1>
+      </div>
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+
+    <!-- Header Section / Hero Banner -->
+    <header class="hero" id="home">
+      <div class="hero-content">
+        <h2>Find Out the Political Bias in News Articles</h2>
+        <p>
+          Paste your article or link below to see if it leans left, right,
+          center, or is uncertain.
+        </p>
+      </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="container">
+      <section class="input-section">
+        <h3>Check an Article for Bias</h3>
+        <label for="articleInput">Paste the article content here:</label>
+        <textarea
+          id="articleInput"
+          placeholder="Paste the text content here"
+        ></textarea>
+
+        <p class="or">OR</p>
+
+        <label for="articleURL">Enter the article URL here:</label>
+        <input type="text" id="articleURL" placeholder="Paste the URL here" />
+
+        <button id="checkBiasBtn">Check for Bias</button>
+      </section>
+
+      <section class="results-section">
+        <h3>Analysis Results</h3>
+        <div id="results" class="results-box">
+          <!-- Bias result will appear here -->
+        </div>
+      </section>
+
+      <section class="how-it-works" id="how-it-works">
+        <h3>How It Works</h3>
+        <p>
+          This tool uses an AI model to analyze the language and tone of news
+          articles to determine if the article is left-leaning, right-leaning,
+          or relatively neutral. The model looks for keywords, phrases, and
+          overall sentiment patterns associated with different political
+          spectrums.
+        </p>
+      </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer id="contact">
+      <div class="footer-content">
+        <p>&copy; 2025 AI Bias Detector. All rights reserved.</p>
+        <p>
+          Contact us:
+          <a href="mailto:info@aibiasdetector.com">info@aibiasdetector.com</a>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Link to external JS -->
+    <script src="script.js"></script>
+  </body>
+</html>
