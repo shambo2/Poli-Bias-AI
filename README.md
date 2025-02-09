@@ -54,16 +54,16 @@ We created Poli-Bias AI as part of our hackathon project to help news readers sp
 ## Architecture
 
 ```
-┌────────────────────┐    ┌────────────────────────────┐
-│   Front End (JS)   │    │    Flask Backend (Python)  │
-│  - HTML, CSS, JS   │ <─────> │  - Hugging Face Transformers │
-│ - Renders articles │    │    - BART MNLI model       │
-└────────────────────┘    └────────────────────────────┘
+┌────────────────────┐         ┌────────────────────────────┐
+│   Front End (JS)   │         │    Flask Backend (Python)  │
+│  - HTML, CSS, JS   │ <─────> │- Hugging Face Transformers │
+│ - Renders articles │         │    - BART MNLI model       │
+└────────────────────┘         └────────────────────────────┘
          ^                            ^
          │                            │
          v                            │
-┌────────────────────┐               │
-│     News API       │ <─────────────┘
+┌────────────────────┐                │
+│     News API       │ <────────────-─┘
 │ (external service) │
 └────────────────────┘
 ```
