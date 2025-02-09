@@ -6,9 +6,24 @@
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   font-family: "Roboto", sans-serif;
   background-color: #f9f9f9;
   color: #333;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  /* Make the page take up the full height of the browser */
+  height: 100%;
+}
+
+main {
+  /* Allow <main> to grow and push the footer down if needed */
+  flex: 1;
 }
 
 /* NAVIGATION BAR */
@@ -186,4 +201,42 @@ footer {
   color: #fff;
   text-align: center;
   padding: 1rem;
+}
+
+/* Presenters Section Container */
+.presenters-section {
+  max-width: 1200px; /* optional max width */
+  margin: 2rem auto;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+/* Force a single row (4 columns) with no horizontal scroll. 
+   The grid simply shrinks columns if the screen is smaller. */
+.presenters-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* exactly 4 equal-width columns */
+  gap: 1.5rem;
+  padding-top: 1rem;
+}
+
+/* Presenter Card */
+.presenter-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  /* Let the grid handle column sizing; do NOT force a fixed width */
+  /* This way, cards auto-shrink on smaller screens. */
+}
+
+/* Presenter Photo */
+.presenter-photo {
+  width: 150px; /* Set a fixed width */
+  height: 150px; /* Set a fixed height */
+  object-fit: cover; /* Maintain aspect ratio and cover the area */
+  border-radius: 50%;
+  margin-bottom: 1rem;
 }
