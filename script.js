@@ -6,12 +6,88 @@ const NEWS_API_URL =
   "https://newsapi.org/v2/top-headlines?country=us&pageSize=6&apiKey=" +
   NEWS_API_KEY;
 
+document.getElementById("fetchNewsBtn").addEventListener("click", fetchNews);
+
+function fetchNews() {
+  // Example fetch request to your Flask backend
+  fetch("/analyze", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text: "Example article text" }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const articlesContainer = document.getElementById("articlesContainer");
+      articlesContainer.innerHTML = ""; // Clear existing articles
+
+      // Example article data
+      const article = {
+        title: "Example Article Title",
+        summary: "Example article summary...",
+        image: "example-image.jpg",
+        bias_scores: data.bias_scores,
+      };
+
+      // Create article card
+      const articleCard = document.createElement("div");
+      articleCard.className = "article-card";
+
+      // Add article image
+      const articleImage = document.createElement("img");
+      articleImage.src = article.image;
+      articleImage.alt = "Article Image";
+      articleImage.className = "article-image";
+      articleCard.appendChild(articleImage);
+
+      // Add article info
+      const articleInfo = document.createElement("div");
+      articleInfo.className = "article-info";
+
+      const articleTitle = document.createElement("h3");
+      articleTitle.textContent = article.title;
+      articleInfo.appendChild(articleTitle);
+
+      const articleSummary = document.createElement("p");
+      articleSummary.textContent = article.summary;
+      articleInfo.appendChild(articleSummary);
+
+      // Add bias bars
+      const articleBias = document.createElement("div");
+      articleBias.className = "article-bias";
+
+      const biasLeft = document.createElement("div");
+      biasLeft.className = "bias-bar bias-left";
+      biasLeft.style.width = `${article.bias_scores.Left}%`;
+      biasLeft.textContent = `Left: ${article.bias_scores.Left}%`;
+      articleBias.appendChild(biasLeft);
+
+      const biasCenter = document.createElement("div");
+      biasCenter.className = "bias-bar bias-center";
+      biasCenter.style.width = `${article.bias_scores.Center}%`;
+      biasCenter.textContent = `Center: ${article.bias_scores.Center}%`;
+      articleBias.appendChild(biasCenter);
+
+      const biasRight = document.createElement("div");
+      biasRight.className = "bias-bar bias-right";
+      biasRight.style.width = `${article.bias_scores.Right}%`;
+      biasRight.textContent = `Right: ${article.bias_scores.Right}%`;
+      articleBias.appendChild(biasRight);
+
+      articleInfo.appendChild(articleBias);
+      articleCard.appendChild(articleInfo);
+      articlesContainer.appendChild(articleCard);
+    })
+    .catch((error) => console.error("Error fetching news:", error));
+}
+
 /**************************************************
  * 2) CALL THE FLASK BACKEND FOR BIAS ANALYSIS
  **************************************************/
 async function analyzeWithAI(articleText) {
   try {
-    // Adjust if your backend is at a different IP/port
+    // Adjust to match your Flask endpoint
     const response = await fetch("http://127.0.0.1:5000/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,18 +100,18 @@ async function analyzeWithAI(articleText) {
     }
 
     const data = await response.json();
-    // Example:
+    // Example data:
     // {
     //   "text": "...",
     //   "bias_scores": {
-    //     "Left": 45.32,
-    //     "Center": 30.11,
-    //     "Right": 24.57
+    //     "Left": 15.43,
+    //     "Center": 46.14,
+    //     "Right": 38.43
     //   }
     // }
     return data;
   } catch (error) {
-    console.error("Network or CORS error:", error);
+    console.error("Network/CORS error:", error);
     return { bias_scores: null };
   }
 }
@@ -46,15 +122,12 @@ async function analyzeWithAI(articleText) {
 async function realCalculateBias(articleText) {
   const result = await analyzeWithAI(articleText);
   if (result.bias_scores) {
-    // Convert to a simpler shape for our UI.
-    // We assume the server no longer returns "Uncertain"
     return {
       left: result.bias_scores["Left"] || 0,
       center: result.bias_scores["Center"] || 0,
       right: result.bias_scores["Right"] || 0,
     };
   } else {
-    // Fallback if the API call fails
     return { left: 0, center: 0, right: 0 };
   }
 }
@@ -62,7 +135,6 @@ async function realCalculateBias(articleText) {
 /**************************************************
  * 4) RENDER ARTICLES
  **************************************************/
-// We make renderArticle asynchronous to await the AI results.
 async function renderArticle(article) {
   const articleCard = document.createElement("div");
   articleCard.classList.add("article-card");
@@ -74,7 +146,7 @@ async function renderArticle(article) {
     article.urlToImage || "https://via.placeholder.com/400x200?text=No+Image";
   image.alt = article.title || "News Image";
 
-  // TEXT INFO
+  // INFO CONTAINER
   const info = document.createElement("div");
   info.classList.add("article-info");
 
@@ -86,52 +158,52 @@ async function renderArticle(article) {
   const description = document.createElement("p");
   description.textContent = article.description || "No description available.";
 
-  // "Read more" link
+  // Read more link
   const readMore = document.createElement("a");
   readMore.href = article.url;
   readMore.target = "_blank";
   readMore.textContent = "Read more";
-  readMore.style.color = "#e74c3c";
-  readMore.style.fontWeight = "bold";
 
-  // Append text info
   info.appendChild(title);
   info.appendChild(description);
   info.appendChild(readMore);
 
   // BIAS ANALYSIS
-  // Combine title + description for the text analysis
   const articleText = (article.title || "") + " " + (article.description || "");
-  const biasResult = await realCalculateBias(articleText);
+  const { left, center, right } = await realCalculateBias(articleText);
 
-  // Create the bias container
-  const biasContainer = document.createElement("div");
-  biasContainer.classList.add("article-bias");
+  // Single bar container
+  const biasBarContainer = document.createElement("div");
+  biasBarContainer.classList.add("bias-bar-container");
 
-  // Left bar
-  const leftBar = document.createElement("div");
-  leftBar.classList.add("bias-bar", "bias-left");
-  leftBar.textContent = `Left ${biasResult.left}%`;
+  // Left segment (with text inside)
+  const leftSegment = document.createElement("div");
+  leftSegment.classList.add("bias-segment", "bias-left");
+  leftSegment.style.width = left + "%";
+  // Show "Left XX%" in the bar
+  leftSegment.textContent = `Left ${left.toFixed(2)}%`;
 
-  // Center bar
-  const centerBar = document.createElement("div");
-  centerBar.classList.add("bias-bar", "bias-center");
-  centerBar.textContent = `Center ${biasResult.center}%`;
+  // Center segment
+  const centerSegment = document.createElement("div");
+  centerSegment.classList.add("bias-segment", "bias-center");
+  centerSegment.style.width = center + "%";
+  centerSegment.textContent = `Center ${center.toFixed(2)}%`;
 
-  // Right bar
-  const rightBar = document.createElement("div");
-  rightBar.classList.add("bias-bar", "bias-right");
-  rightBar.textContent = `Right ${biasResult.right}%`;
+  // Right segment
+  const rightSegment = document.createElement("div");
+  rightSegment.classList.add("bias-segment", "bias-right");
+  rightSegment.style.width = right + "%";
+  rightSegment.textContent = `Right ${right.toFixed(2)}%`;
 
-  // Append the three bars
-  biasContainer.appendChild(leftBar);
-  biasContainer.appendChild(centerBar);
-  biasContainer.appendChild(rightBar);
+  // Append segments
+  biasBarContainer.appendChild(leftSegment);
+  biasBarContainer.appendChild(centerSegment);
+  biasBarContainer.appendChild(rightSegment);
 
-  // Build the article card
+  // BUILD THE CARD
   articleCard.appendChild(image);
   articleCard.appendChild(info);
-  articleCard.appendChild(biasContainer);
+  articleCard.appendChild(biasBarContainer);
 
   return articleCard;
 }
@@ -144,22 +216,21 @@ async function fetchNewsArticles() {
     const response = await fetch(NEWS_API_URL);
     const data = await response.json();
 
-    const articlesContainer = document.getElementById("articlesContainer");
-    articlesContainer.innerHTML = ""; // Clear previous
+    const container = document.getElementById("articlesContainer");
+    container.innerHTML = ""; // Clear previous
 
     if (data.articles && data.articles.length > 0) {
-      // Render each article in sequence
       for (const article of data.articles) {
         const articleCard = await renderArticle(article);
-        articlesContainer.appendChild(articleCard);
+        container.appendChild(articleCard);
       }
     } else {
-      articlesContainer.innerHTML = "<p>No news found.</p>";
+      container.innerHTML = "<p>No news found.</p>";
     }
   } catch (error) {
     console.error("Error fetching news:", error);
-    const articlesContainer = document.getElementById("articlesContainer");
-    articlesContainer.innerHTML = "<p>Error fetching news articles.</p>";
+    const container = document.getElementById("articlesContainer");
+    container.innerHTML = "<p>Error fetching news articles.</p>";
   }
 }
 
@@ -167,8 +238,8 @@ async function fetchNewsArticles() {
  * 6) EVENT LISTENERS
  **************************************************/
 document.addEventListener("DOMContentLoaded", () => {
-  const fetchNewsBtn = document.getElementById("fetchNewsBtn");
-  fetchNewsBtn.addEventListener("click", () => {
+  const fetchBtn = document.getElementById("fetchNewsBtn");
+  fetchBtn.addEventListener("click", () => {
     fetchNewsArticles();
   });
 });
